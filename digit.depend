@@ -1,0 +1,11 @@
+# depslib dependency file v1.0
+1545592017 source:e:\digit\main.cpp
+	<iostream>
+	<fstream>
+	<cstring>
+	<string>
+	<cstdlib>
+	<conio.h>
+	<cstdio>
+	<math.h>
+
