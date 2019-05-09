@@ -1,0 +1,14 @@
+# depslib dependency file v1.0
+1545595234 source:e:\testopencv\main.cpp
+	"core.hpp"
+	"highgui.hpp"
+	"imgcodecs.hpp"
+	<iostream>
+	<fstream>
+	<cstring>
+	<string>
+	<cstdlib>
+	<conio.h>
+	<cstdio>
+	<math.h>
+

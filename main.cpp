@@ -1,4 +1,7 @@
-#include <iostream>
+#include "core.hpp"
+#include "highgui.hpp"
+#include "imgcodecs.hpp"
+#include<iostream>
 #include <fstream>
 #include <cstring>
 #include <string>
@@ -7,25 +10,24 @@
 #include <cstdio>
 #include <math.h>
 
+using namespace cv;
 using namespace std;
-int layersize=400;const int num_labels = 10;int lambda=0.1;int num_iters=500;
-double **x;double y[2000],m=1000,n=400;double ybin[10][2000];double **tempx; double hyp[2000][num_labels];
-double initial_theta[450][num_labels];double cost[num_labels]; double grad[450][num_labels];int i,j,k;double alpha=0.01;
-
+double **x;
 int readdatax()
 {
-    double* a = new double[500000];
+    int i,j;
+    double* a = new double[5000];
     long int p=0;
-    x= new double *[2000];
-    for(i=0;i<2000;i++)
+    x= new double *[10];
+    for(i=0;i<10;i++)
     x[i]= new double[450];
 
     FILE *fp;
-    fp = fopen("dataxt2.csv","r");
+    fp = fopen("theta.csv","r");
     char buffer[1024] ;
     char *record,*line;
 
-    while(p<(m*n))
+    while(p<4010)
     {
         line=fgets(buffer,sizeof(buffer),fp);
 		record = strtok(line,",");
@@ -37,78 +39,13 @@ int readdatax()
 
 	}
 	p=0;
-	for(i=0;i<m;i++)
-    for(j=0;j<n;j++)
+	for(i=0;i<10;i++)
+    for(j=0;j<=400;j++)
     x[i][j]=a[p++];
-
-
     delete [] a;
 
     fclose(fp);
     return 0;
-
-}
-
-int readdatay()
-{
-    FILE *fp;
-    fp = fopen("datayt.csv","r");
-    char buffer[1024] ;
-    char *record,*line;
-    int l=0;
-    double maty[2000];
-    while((line=fgets(buffer,sizeof(buffer),fp))!=NULL)
-    {
-		record = strtok(line,",");
-		while(record != NULL)
-			{
-            maty[l++] = atof(record) ;
-            record = strtok(NULL,",");
-			}
-
-	}
-    fclose(fp);
-    int k=0;
-    for(i=0;i<m;i++)
-    {
-        y[i]=maty[k];
-        k++;
-    }
-    return 0;
-}
-
-int assigntheta()
-{
-    for(i=0;i<=n;i++)
-    for(j=0;j<num_labels;j++)
-        initial_theta[i][j]=0;
-    return 0;
-}
-
-int featurexo()
-{
-    for(i=0;i<m;i++)
-    for(j=n-1;j>0;j--)
-    {
-        x[i][j+1]=x[i][j];
-    }
-    for(i=0;i<m;i++)
-    x[i][0]=1;
-
-    return 0;
-}
-
-int outbin()
-{
-    for(i=0;i<num_labels;i++)
-    {
-        for(j=0;j<m;j++)
-        if(y[j]==i)
-        ybin[i][j]=1;
-        else
-        ybin[i][j]=0;
-    }
-   return 0;
 
 }
 
@@ -120,115 +57,41 @@ double sigmoid(double z)
 }
 
 
-
-int costfunc()
-{
-    double sum=0;double hy[2000][num_labels];double temp1[2000][num_labels];
-    for(i=0;i<m;i++)
-    {
-        for(j=0;j<num_labels;j++)
-        {
-          for (k = 0; k <=n; k++)
-          sum = sum + x[i][k]*initial_theta[k][j];
-
-          hy[i][j]=sum;
-        sum=0;
-        }
-    }
-
-    for(i=0;i<m;i++)
-    for(j=0;j<num_labels;j++)
-    {
-        hyp[i][j]= sigmoid(hy[i][j]);
-    }
-
-    for(i=0;i<m;i++)
-    for(j=0;j<num_labels;j++)
-    temp1[i][j]=hyp[i][j]-ybin[j][i];
-
-    tempx= new double *[450];
-    for(i=0;i<450;i++)
-    tempx[i]= new double[2000];
-
-    for(i=0;i<m;i++)
-    for(j=0;j<=n;j++)
-    tempx[j][i]=x[i][j];
-
-    sum=0;
-    for(i=0;i<=n;i++)
-    {
-        for(j=0;j<num_labels;j++)
-        {
-            for(k=0;k<m;k++)
-            sum+= tempx[i][k]*temp1[k][j];
-
-            grad[i][j]=sum;
-            sum=0;
-        }
-    }
-
-    for(i=0;i<=n;i++)
-    {
-        for(j=0;j<num_labels;j++)
-        {
-            if(i==0)
-            {
-                grad[i][j]=grad[i][j]/m;
-            }
-            else
-            {
-                grad[i][j]=(grad[i][j]/m)+(lambda/m)*initial_theta[i][j];
-            }
-        }
-    }
-
-
-
-for(i=0;i<=n;i++)
-for(j=0;j<num_labels;j++)
-initial_theta[i][j]-=alpha*grad[i][j];
-
-for(i=0;i<450;i++)
-    delete []tempx[i];
-    delete []tempx;
-
-return 0;
-}
-int writetheta()
-{
-    ofstream g("theta.csv");
-
-        for(int i=0;i<=n;i++)
-        {
-            for(int j=0;j<num_labels;j++)
-            g<<initial_theta[i][j]<<",";
-            g<<endl;
-        }
-        g.close();
-    return 0;
-}
-
-
-
 int main()
-{
-    readdatax();
-    readdatay();
-    assigntheta();
-    featurexo();
-    outbin();
-   for(int b=0;b<500;b++)
-   {
-       costfunc();
+ {
+    double pixval[500];int k=0;
+    Mat image1, image2;
+    image1 = imread("3.jpg");
+    if (!image1.data) {
+        cout << "could not find image1" << endl;
     }
-    for(i=0;i<=n;i++)
-    for(j=0;j<num_labels;j++)
-        cout<<initial_theta[i][j];
+    for(int j=0;j<image1.rows;j++)
+  {
+  for (int i=0;i<image1.cols;i++)
+  {
+   pixval[k++] = (int)image1.at<uchar>(i,j);
+  }
+  }
+  for(int i=0;i<k;i++)
+   {
+    pixval[i]=pixval[i]/255.0;
+    cout<<pixval[i];
+   }
+     readdatax();
 
-    writetheta();
+    double sum[10];
+ for(int i=0;i<10;i++)
+    sum[i]=0;
+ for(int i=0;i<10;i++)
+    {
+    for (int k = 0; k <=400; k++)
+    sum[i] = sum[i] + x[i][k]*pixval[k];
+    }
+ for(int i=0;i<10;i++)
+ {
+     sum[i]=sigmoid(sum[i]);
+     cout<<sum[i]<<endl;
+ }
 
-    for(i=0;i<2000;i++)
-        delete []x[i];
-    delete []x;
-    return 0;
+   return 0;
 }
