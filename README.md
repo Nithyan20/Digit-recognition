@@ -3,3 +3,4 @@ One-vs-all logistic regression and neural networks (forward propogation) to reco
 dataxt2.csv contains pixel values of known digits.
 datayt.csv contains the digit the pixel values represent.
 theta.csv contains the features which will be used in finding the digit corresponding to the new grayscale image.
+
